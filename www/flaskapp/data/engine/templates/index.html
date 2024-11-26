@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Control Panel</title>
+   </head>
+
+<style>
+
+/* Resetări de stil */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+/* Stilul general al paginii */
+body {
+    background-color: #f4f6f8;
+    color: #333;
+    font-size: 16px;
+}
+
+.container {
+    max-width: 900px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Stil pentru titluri */
+h1, h2, h3 {
+    color: #0056b3;
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-size: 1.8em;
+    border-bottom: 2px solid #0056b3;
+    padding-bottom: 10px;
+}
+
+.card {
+    background-color: #e9eff3;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Stil pentru tabel */
+.server-table, #query-result table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.server-table th, .server-table td, #query-result th, #query-result td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.server-table th {
+    background-color: #0056b3;
+    color: #fff;
+}
+
+.server-table tr:hover, #query-result tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Stil pentru status */
+.status-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.status-up {
+    color: #28a745;
+}
+
+.status-down {
+    color: #dc3545;
+}
+
+.status-dot.status-up {
+    background-color: #28a745;
+}
+
+.status-dot.status-down {
+    background-color: #dc3545;
+}
+
+/* Stil pentru formular */
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+input[type="text"], input[type="password"], select, textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+textarea {
+    resize: vertical;
+}
+
+/* Stil pentru butoane */
+.btn {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 14px;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+
+}
+
+/* Stil ascuns pentru spinner */
+.hidden {
+    display: none;
+}
+
+
+
+</style>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>MySQL Servers Status</h1>
+            <table class="server-table">
+                <thead>
+                    <tr>
+                        <th>Server Name</th>
+                        <th>Days</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Server 1</td>
+                        <td>{{uptime_hour}} days</td>
+                        <td>Master</td>
+                        <td><span class="status-dot status-up"></span> UP</td>
+                    </tr>
+                    <tr>
+                        <td>Server 2</td>
+                        <td>5 hours</td>
+                        <td>Slave</td>
+                        <td><span class="status-dot status-down"></span> DOWN</td>
+                    </tr>
+                    <tr>
+                        <td>Server 3</td>
+                        <td>7 days</td>
+                        <td>Normal</td>
+                        <td><span class="status-dot status-up"></span> UP</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h1>Database Control Panel</h1>
+
+        <div class="card">
+            <h2>Create Database</h2>
+            <form method="post">
+                <label for="server-select">Select MySQL Server</label>
+                <select id="server-select" name="mysql_server" required>
+                    <option value="server1">Server 1</option>
+                    <option value="server2">Server 2</option>
+                    <option value="server3">Server 3</option>
+                </select>
+                <div class="form-group">
+                    <label for="db-name">Database Name</label>
+                    <input type="text" id="db-name" name="db_name" placeholder="Enter database name" required>
+                </div>
+                <div class="form-group">
+                    <label for="db-user">Database User</label>
+                    <input type="text" id="db-user" name="db_user" placeholder="Enter database user" required>
+                </div>
+                <div class="form-group">
+                    <label for="db-password">Database Password</label>
+                    <input type="password" id="db-password" name="db_password" placeholder="Enter password" required>
+                </div>
+                <div class="form-group">
+                    <input type="submit" name="create_db" value="Create Database" class="btn">
+                </div>
+            </form>
+
+            {% if success_message %}
+                <p id="success-message">{{ success_message }}</p>
+            {% elif error_message %}
+                <p id="error-message">{{ error_message }}</p>
+            {% endif %}
+
+            <div class="db-status">
+                <h3>Database Status</h3>
+                <p>Database: <strong>my_database</strong></p>
+                <p>Status: <span class="status-up">UP</span></p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Execute SQL Query</h2>
+            <form method="post">
+                <div class="form-group">
+                    <label for="sql-query">Enter SQL Query</label>
+                    <textarea id="sql-query" name="sql_query" rows="5" placeholder="Write your SQL query here" required></textarea>
+                </div>
+                <div class="form-group">
+                    <input type="submit" name="run_query" value="Execute" class="btn">
+                </div>
+            </form>
+
+            {% if success_message %}
+                <p id="success-message">{{ success_message }}</p>
+            {% elif error_message %}
+                <p id="error-message">{{ error_message }}</p>
+            {% endif %}
+
+            <div id="query-result">
+                <h3>Query Result</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>John Doe</td>
+                            <td>john@example.com</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="loading-spinner" class="hidden">
+            <div class="spinner"></div>
+            <p>Loading, please wait...</p>
+        </div>
+    </div>
+</body>
+</html>
+
